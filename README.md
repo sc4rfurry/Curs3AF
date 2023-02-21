@@ -55,7 +55,7 @@ This tool uses <span style="color:cyan">Go Library</span> <a href ="https://gith
 
 - Can detect **153** different Firewalls
 - Concurrent fingerprinting
-- Fast detection mode for huge target lists
+- Fast detection mode (only checks for the most common WAFs)
 
 #
 
@@ -119,6 +119,14 @@ env GOOS=linux GOARCH=amd64 go build -a -ldflags '-s -w -extldflags "-static"' -
 chmod +x builder.sh
 ./builder.sh main.go
 ```
+<div>
+<h3 style="text-align:center;color:cyan"> Pre-Compiled Binaries </h2>
+</br>
+<div style="text-align:center">
+    <a href="https://github.com/sc4rfurry/Curs3AF/releases/tag/v1.0.0-stable">
+    <img src="https://img.shields.io/badge/Download-v1.0.0-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Download">
+    </a>
+</div>
 
 #
 
