@@ -43,8 +43,8 @@ func init() {
 
 func banner() {
 	var author string = "sc4rfurry"
-	var version string = "1.0.0"
-	var go_version string = "1.19"
+	var version string = "1.0.1"
+	var go_version string = "1.18.1 or higher"
 	var github string = "https://github.com/sc4rfurry"
 	var description string = "Tool to check if a website is protected by a WAF(HTTP/HTTPS)."
 	banner := figure.NewColorFigure("Curs3AF", "", "purple", true)
@@ -59,31 +59,18 @@ func banner() {
 }
 
 func help() {
-	var helper string = `
-		-- Help for Curs3AF --
-	
-	usage: ./main -u/--url <domain>
----------------------------------------------------------
-	Description:
-		- Tool to check if a website is protected by a WAF.
-			
-			* This tool uses wafme0w, which is a fork of wafw00f.
-	
-	Installation:
-		- sudo apt-get update && sudo apt-get golang
-		- git clone https://github.com/sc4rfurry/Curs3AF.git
-		- cd Curs3AF
-		- go get .
-		- go build
-
-	Binary:
-		- You can download the PreCompiled binaries from the releases page.
-`
-	println(helper)
+	println(color.Bold + color.Green + "\n\t\t\t~ Help Menu ~" + color.Reset)
+	println("\n\t" + color.Bold + color.Cyan + "Usage: " + color.Reset + "./main -u/--url <domain>")
+	println(color.Bold + color.Gray + "____________________________________________________________" + color.Reset)
+	println("\n\t" + color.Bold + color.Green + "Options: " + color.Reset)
+	println("\t\t" + color.Bold + color.Yellow + "-u/--url " + color.Reset + "\tDomain to scan")
+	println("\t\t" + color.Bold + color.Yellow + "-f/--file " + color.Reset + "\tFile with domains to scan (Each domain in a new line)")
+	println("\t\t" + color.Bold + color.Yellow + "-g/--generic " + color.Reset + "\tScan for mostly used WAFs")
+	println("\t\t" + color.Bold + color.Yellow + "-h/--help " + color.Reset + "\tShow this help menu" + "\n")
 	os.Exit(0)
 }
 
-func downloadFile(filepath string, url string) error {
+func downloadFile(filename string, url string) error {
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
@@ -92,7 +79,7 @@ func downloadFile(filepath string, url string) error {
 	defer resp.Body.Close()
 
 	// Create the file
-	out, err := os.Create(filepath)
+	out, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -103,18 +90,107 @@ func downloadFile(filepath string, url string) error {
 	return err
 }
 
+func scanFile(filename string, isGeneric bool) {
+	// Open FingerPrints
+	fingerPrintsFile, err := os.Open("waf-fingerprints.json")
+	if err != nil {
+		log.Fatalf("error opening fingerprints file: %v", err)
+	}
+	defer fingerPrintsFile.Close()
+
+	// Open Targets File
+	targetsFile, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("error opening targets file: %v", err)
+	}
+	defer targetsFile.Close()
+
+	// Run WAF Detection
+	if isGeneric {
+		opts := &wafme0w.Options{
+			Inputs:           targetsFile,
+			FingerPrints:     fingerPrintsFile,
+			Concurrency:      50,
+			FastMode:         true,
+			ExcludeGeneric:   false,
+			ListWAFS:         false,
+			Silent:           true,
+			NoColors:         false,
+			SuppressWarnings: false,
+		}
+		println(info + "Starting WAF Detection on " + color.Bold + color.Green + filename + color.Reset)
+		println(info + "Running in Generic Mode (Scan for mostly used Wafs)" + "\n")
+		runner := wafme0w.NewRunner(opts)
+		result, err := runner.Scan()
+		if err != nil {
+			log.Fatalf("error running scan: %v", err)
+		}
+
+		// Print Results
+		for _, target := range result {
+			fmt.Printf("%v[!]%v %v%v%v is protected by %v%v%v\n", Purple, Reset, Yellow, target.Target, Reset, Cyan, target.FingerPrint, Reset)
+		}
+		println("\n")
+	} else {
+
+		opts := &wafme0w.Options{
+			Inputs:           targetsFile,
+			FingerPrints:     fingerPrintsFile,
+			Concurrency:      50,
+			FastMode:         false,
+			ExcludeGeneric:   false,
+			ListWAFS:         false,
+			Silent:           true,
+			NoColors:         false,
+			SuppressWarnings: false,
+		}
+		println(info + "Starting WAF Detection on " + color.Bold + color.Green + filename + color.Reset)
+		println(info + "Running in Normal Mode (Scan for all 153 Wafs)" + "-" + " Could take time to scan" + "\n")
+		runner := wafme0w.NewRunner(opts)
+		result, err := runner.Scan()
+		if err != nil {
+			log.Fatalf("error running scan: %v", err)
+		}
+
+		// Print Results
+		for _, target := range result {
+			fmt.Printf("%v[!]%v %v%v%v is protected by %v%v%v\n", Purple, Reset, Yellow, target.Target, Reset, Cyan, target.FingerPrint, Reset)
+		}
+		println("\n")
+	}
+	os.Exit(0)
+}
+
 func main() {
 	var targets []byte
+	var isGeneric bool
+	var filename string
 	args := os.Args[1:]
+	for _, arg := range args {
+		if arg == "-g" || arg == "--generic" {
+			isGeneric = true
+		} else {
+			isGeneric = false
+		}
+	}
 	if len(args) == 0 {
-		banner()
 		help()
 	}
 	if args[0] == "-h" || args[0] == "--help" {
-		banner()
 		help()
 	}
 	banner()
+	if args[0] == "-f" || args[0] == "--file" {
+		if args[1] != "" {
+			filename = args[1]
+		} else {
+			log.Fatalf("Invalid or Null Filename: %v", filename)
+		}
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			log.Fatalf("File does not exist: %v", filename)
+		}
+		scanFile(filename, isGeneric)
+	}
 	if args[0] == "-u" || args[0] == "--url" {
 		domain := args[1]
 		if domain == "" {
@@ -145,23 +221,56 @@ func main() {
 	defer fingerPrintsFile.Close()
 
 	// Run WAF Detection
-	opts := &wafme0w.Options{
-		Inputs:       targetsReader,
-		FingerPrints: fingerPrintsFile,
-		Silent:       true,
-		Concurrency:  50,
-		FastMode:     true,
-	}
-	println(info + "Starting WAF Detection on " + color.Bold + color.Green + args[1] + color.Reset + "\n")
-	runner := wafme0w.NewRunner(opts)
-	result, err := runner.Scan()
-	if err != nil {
-		log.Fatalf("error running scan: %v", err)
-	}
+	if isGeneric {
+		opts := &wafme0w.Options{
+			Inputs:           targetsReader,
+			FingerPrints:     fingerPrintsFile,
+			Concurrency:      50,
+			FastMode:         true,
+			ExcludeGeneric:   false,
+			ListWAFS:         false,
+			Silent:           true,
+			NoColors:         false,
+			SuppressWarnings: false,
+		}
+		println(info + "Starting WAF Detection on " + color.Bold + color.Green + args[1] + color.Reset)
+		println(info + "Running in Generic Mode (Scan for mostly used Wafs)" + "\n")
+		runner := wafme0w.NewRunner(opts)
+		result, err := runner.Scan()
+		if err != nil {
+			log.Fatalf("error running scan: %v", err)
+		}
 
-	// Print Results
-	for _, target := range result {
-		fmt.Printf("%v[!]%v %v%v%v is protected by %v%v%v\n", Purple, Reset, Yellow, target.Target, Reset, Cyan, target.FingerPrint, Reset)
+		// Print Results
+		for _, target := range result {
+			fmt.Printf("%v[!]%v %v%v%v is protected by %v%v%v\n", Purple, Reset, Yellow, target.Target, Reset, Cyan, target.FingerPrint, Reset)
+		}
+		println("\n")
+	} else {
+
+		opts := &wafme0w.Options{
+			Inputs:           targetsReader,
+			FingerPrints:     fingerPrintsFile,
+			Concurrency:      50,
+			FastMode:         false,
+			ExcludeGeneric:   false,
+			ListWAFS:         false,
+			Silent:           true,
+			NoColors:         false,
+			SuppressWarnings: false,
+		}
+		println(info + "Starting WAF Detection on " + color.Bold + color.Green + args[1] + color.Reset)
+		println(info + "Running in Normal Mode (Scan for all 153 Wafs)" + "-" + " Could take time to scan" + "\n")
+		runner := wafme0w.NewRunner(opts)
+		result, err := runner.Scan()
+		if err != nil {
+			log.Fatalf("error running scan: %v", err)
+		}
+
+		// Print Results
+		for _, target := range result {
+			fmt.Printf("%v[!]%v %v%v%v is protected by %v%v%v\n", Purple, Reset, Yellow, target.Target, Reset, Cyan, target.FingerPrint, Reset)
+		}
+		println("\n")
 	}
-	println("\n")
 }
