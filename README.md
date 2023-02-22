@@ -6,7 +6,7 @@
 <div style="text-align:center">
     <div style="align:center">
     <img src="https://img.shields.io/badge/Author-sc4rfurry-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Author">
-    <img src="https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Version">
+    <img src="https://img.shields.io/badge/Version-1.0.1-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Version">
     <img src="https://img.shields.io/badge/Go_Version-1.18.1-informational?style=flat-square&logo=Go&logoColor=cyan&color=5194f0&bgcolor=110d17" alt="Go Version">
     <img src="https://img.shields.io/badge/OS-Linux-informational?style=flat-square&logo=ubuntu&logoColor=green&color=5194f0&bgcolor=110d17" alt="OS">
     <img src="https://img.shields.io/badge/Go_Library-wafme0w-informational?style=flat-square&logo=Go&logoColor=cyan&color=5194f0&bgcolor=110d17" alt="Go Library">
@@ -55,7 +55,8 @@ This tool uses <span style="color:cyan">Go Library</span> <a href ="https://gith
 
 - Can detect **153** different Firewalls
 - Concurrent fingerprinting
-- Fast detection mode (only checks for the most common WAFs)
+- Scan Multiple Domains from a file
+- Fast detection mode (only checks for the most common WAFs - **Optional**)
 
 #
 
@@ -63,6 +64,7 @@ This tool uses <span style="color:cyan">Go Library</span> <a href ="https://gith
 ```sh
 go run main.go --help
 go run main.go -u https://www.google.com
+go run main.go -f domains.txt -g
 ```
 
 
@@ -80,26 +82,23 @@ go run main.go --url asgoogle.com
   \____|  \__,_| |_|    |___/ |____/  /_/   \_\ |_|
 
 
- Description: Tool to check if a website is protected by a WAF(HTTP/HTTPS).
+  Description: Tool to check if a website is protected by a WAF(HTTP/HTTPS).
 
 
-                Author: 	 sc4rfurry
-                Version: 	 1.0.0
-                Go Version:      1.19
-                Github: 	 https://github.com/sc4rfurry
-
-===================================================================================================
-
+	Author: 	 sc4rfurry
+	Version: 	 1.0.1
+	Go Version: 	 1.18.1 or higher
+	Github: 	 https://github.com/sc4rfurry
+=================================================================================================
 
 
 [info] Starting WAF Detection on asgoogle.com
+[info] Running in Normal Mode (Scan for all 153 Wafs)- Could take time to scan
 
 
-
-[!] https://asgoogle.com is protected by [{AWS Elastic Load Balancer (Amazon)}]
 
 [!] http://asgoogle.com is protected by [{AWS Elastic Load Balancer (Amazon)}]
-
+[!] https://asgoogle.com is protected by [{AWS Elastic Load Balancer (Amazon)}]
 ```
 
 #
@@ -119,13 +118,17 @@ env GOOS=linux GOARCH=amd64 go build -a -ldflags '-s -w -extldflags "-static"' -
 chmod +x builder.sh
 ./builder.sh main.go
 ```
+#
+## Pre-Compiled Binaries
 <div>
-<h3 style="text-align:center;color:cyan"> Pre-Compiled Binaries </h2>
-</br>
 <div style="text-align:center">
-    <a href="https://github.com/sc4rfurry/Curs3AF/releases/tag/v1.0.0-stable">
-    <img src="https://img.shields.io/badge/Download-v1.0.0-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Download">
+    <a href="https://github.com/sc4rfurry/Curs3AF/releases/tag/v1.0.1">
+    <img src="https://img.shields.io/badge/Download-v1.0.1-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Download">
     </a>
+<div style="text-align:center">
+    <img src="https://img.shields.io/badge/Status-Active-informational?style=flat-square&logo=github&logoColor=white&color=5194f0&bgcolor=110d17" alt="Status">
+</div>
+</div>
 </div>
 
 #
